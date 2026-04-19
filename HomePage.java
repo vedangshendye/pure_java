@@ -6,13 +6,15 @@ import com.google.gson.Gson;
 public class HomePage {
     String username;
     String[] users;
+    MainFrame frame;
     public static void main(String[] args) {
         
 
     }
-    HomePage(String username,String[] users){
+    HomePage(String username,String[] users,MainFrame frame){
         this.username=username;
         this.users=users;
+        this.frame=frame;
     }
     JPanel getHomePage(String username,String[] users,BufferedReader in,PrintWriter out){
         JPanel home=new JPanel();

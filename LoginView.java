@@ -7,15 +7,17 @@ import java.net.Socket;
 import com.google.gson.Gson;
 
 public class LoginView{
-    // BufferedReader in;
-    // PrintWriter out;
+    MainFrame frame;
+    BufferedReader in;
+    PrintWriter out;
     public static void main(String args[]){
         
     }
-    LoginView(BufferedReader in,PrintWriter out){
+    LoginView(BufferedReader in,PrintWriter out,MainFrame frame){
         System.out.println("LoginView Created");
-        // this.in=in;
-        // this.out=out;
+        this.frame=frame;
+        this.in=in;
+        this.out=out;
     }
     JPanel getLoginView(BufferedReader in,PrintWriter out){
         System.out.println("GetLoginView enteted!");
@@ -24,7 +26,7 @@ public class LoginView{
         
         panel.setPreferredSize(new Dimension(400,600));
         JLabel label=new JLabel("Enter username:");
-        TextField userinp=new TextField();
+        JTextField userinp=new JTextField();
         JButton button=new JButton("Login");
         button.addActionListener(e->logincall(userinp,in,out));
 
@@ -35,21 +37,26 @@ public class LoginView{
         return panel;
     }
 
-    void logincall(TextField userinp,BufferedReader in,PrintWriter out){
+    void logincall(JTextField userinp,BufferedReader in,PrintWriter out){
         System.out.println("logincall function entered");
         String username=userinp.getText();
         Object req=new Loginreq("login",username);
         
         new Thread(()->{
+            Gson gson=new Gson();
+            String json=gson.toJson(req);
+            out.println(json);
            try{
             String resp=in.readLine();
             System.out.println("RAW response from backend:"+resp);
-            Gson gson=new Gson();
             LoginResponse res=gson.fromJson(resp,LoginResponse.class);
             if(res.type.equals("login_success")){
                 System.out.println("Login successful.");
                 SwingUtilities.invokeLater(()->{
                     System.out.println("LOgin success message from invoke later");
+                    HomePage home=new HomePage(username, res.activeUsers, frame);
+                    JPanel homeview=home.getHomePage(username,res.activeUsers, in, out);
+                    frame.setMainFrame(homeview);
                 });
             }
 
@@ -57,11 +64,7 @@ public class LoginView{
             System.out.println(e.toString());
            }
         }).start();
-        new Thread(()->{
-            Gson gson=new Gson();
-            String json=gson.toJson(req);
-            out.println(json);
-        }).start();
+        
     }
 }
 class Loginreq{
@@ -76,7 +79,7 @@ class Loginreq{
 class LoginResponse{
     String  type;
     String message;
-    String[] activeusers;
+    String[] activeUsers;
 }
 /*
 Seperate classes in separate files for Main,LoginView,Message,Homepage,ChatView

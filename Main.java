@@ -13,17 +13,15 @@ public class Main{
     static PrintWriter out;
     static Gson gson;
     public static void main(String[] args) {
-        JFrame frame=new JFrame();
+        MainFrame frame=new MainFrame();
         System.out.println("Main working !");
         try{
             socket=new Socket("localhost",4000);
             in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out=new PrintWriter(socket.getOutputStream(),true);
-            LoginView logscreen=new LoginView(in, out);
+            LoginView logscreen=new LoginView(in, out,frame);
             JPanel panel=logscreen.getLoginView(in,out);
-            frame.setSize(400,600);
-            frame.setContentPane(panel);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setMainFrame(panel);
             frame.setVisible(true);
 
         }catch(Exception e){
@@ -31,8 +29,23 @@ public class Main{
         }
 
     }
-    void showHome(String username,String[] users){
-        
+}
+
+class MainFrame extends JFrame{
+    MainFrame(){
+        setSize(400, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+    MainFrame(JPanel p){
+        setSize(400, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setContentPane(p);
+    }
+
+    void setMainFrame(JPanel p){
+        setContentPane(p);
+        repaint();
+        revalidate();
     }
 }
 
