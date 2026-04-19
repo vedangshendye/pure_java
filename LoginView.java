@@ -48,15 +48,17 @@ public class LoginView{
             out.println(json);
            try{
             String resp=in.readLine();
+            
             System.out.println("RAW response from backend:"+resp);
             LoginResponse res=gson.fromJson(resp,LoginResponse.class);
+            System.out.println("Active users: " + java.util.Arrays.toString(res.activeUsers));
             if(res.type.equals("login_success")){
                 System.out.println("Login successful.");
                 SwingUtilities.invokeLater(()->{
                     System.out.println("LOgin success message from invoke later");
                     HomePage home=new HomePage(username, res.activeUsers, frame);
                     JPanel homeview=home.getHomePage(username,res.activeUsers, in, out);
-                    frame.setMainFrame(homeview);
+                    frame.setMainFrame(homeview);//upon successful login, sets frame to show homepage
                 });
             }
 

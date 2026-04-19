@@ -21,13 +21,12 @@ public class Main{
             out=new PrintWriter(socket.getOutputStream(),true);
             LoginView logscreen=new LoginView(in, out,frame);
             JPanel panel=logscreen.getLoginView(in,out);
-            frame.setMainFrame(panel);
+            frame.setMainFrame(panel);//Main initially creates and sets the login screen
             frame.setVisible(true);
 
         }catch(Exception e){
             System.out.println(e.toString());
         }
-
     }
 }
 
@@ -40,6 +39,8 @@ class MainFrame extends JFrame{
         setSize(400, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(p);
+        repaint();
+        revalidate();
     }
 
     void setMainFrame(JPanel p){

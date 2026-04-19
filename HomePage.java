@@ -40,17 +40,24 @@ public class HomePage {
 
         return home;
     }
-    void openchat(String user1,String user2,BufferedReader in,PrintWriter out){
+    void openchat(String user1,String user2,BufferedReader in,PrintWriter out){//should render chatview
         Chatreq req=new Chatreq(user1, user2);
         Gson gson=new Gson();
+        
         new Thread(()->{
             try{
+                String json=gson.toJson(req);
+                out.println(json);
                 String resp=in.readLine();
                 Chatresp response=gson.fromJson(resp,Chatresp.class);
                 if(response.type.equals("chat_history")){
                     System.out.println("Success in retrieving chat");
+                    System.out.println("Raw response:"+gson.toJson(response));
                     SwingUtilities.invokeLater(()->{
-                        System.out.println("Success in chat retrievel form invoe later");
+                        System.out.println("Success in chat retrievel form invoke later");
+                        ChatView chatviewobj=new ChatView(frame,response.messages,user1,user2);
+                        JPanel chatview=chatviewobj.getChatView(in,out);
+                        frame.setMainFrame(chatview);
                     });
                 }
 
@@ -59,10 +66,6 @@ public class HomePage {
             }
         }).start();
 
-        new Thread(()->{
-            String json=gson.toJson(req);
-            out.println(json);
-        }).start();
 
     }
 }
@@ -80,9 +83,9 @@ class Chatreq{
 class Chatresp{
     String type;
     String with;
-    String[] messages;
+    Message[] messages;
 
-    Chatresp(String t,String with,String[] messages){
+    Chatresp(String t,String with,Message[] messages){
         System.out.println("Chatresp constructor entered");
         type=t;
         this.with=with;
