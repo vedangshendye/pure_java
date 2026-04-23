@@ -50,11 +50,11 @@ public class HomePage {
                 out.println(json);
                 String resp;
                 synchronized (ResponseStore.lock) {
-                while (ResponseStore.responses.isEmpty()) {
-                    ResponseStore.lock.wait();
+                    while (ResponseStore.responses.isEmpty()) {
+                        ResponseStore.lock.wait();
+                    }
+                    resp = ResponseStore.responses.poll();
                 }
-                resp = ResponseStore.responses.poll();
-            }
                 Chatresp response=gson.fromJson(resp,Chatresp.class);
                 if(response.type.equals("chat_history")){
                     System.out.println("Success in retrieving chat");

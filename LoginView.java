@@ -47,24 +47,36 @@ public class LoginView{
             String json=gson.toJson(req);
             out.println(json);
            try{
-            String resp;
-            synchronized (ResponseStore.lock) {
-                while (ResponseStore.responses.isEmpty()) {
-                    ResponseStore.lock.wait();
+            String  resp;
+            LoginResponse res;
+
+            while (true) {
+                synchronized (ResponseStore.lock) {
+                    while (ResponseStore.responses.isEmpty()) {
+                        ResponseStore.lock.wait();
+                    }
+                    resp = ResponseStore.responses.poll();
                 }
-                resp = ResponseStore.responses.poll();
+
+                res = gson.fromJson(resp, LoginResponse.class);
+
+                if (res != null && "login_success".equals(res.type)) {
+                    break;
+                }
             }
-            
-            System.out.println("RAW response from backend:"+resp);
-            LoginResponse res=gson.fromJson(resp,LoginResponse.class);
+
+            System.out.println("RAW response from backend: " + resp);
             System.out.println("Active users: " + java.util.Arrays.toString(res.activeUsers));
-            if(res.type.equals("login_success")){
+
+            if ("login_success".equals(res.type)) {
                 System.out.println("Login successful.");
-                SwingUtilities.invokeLater(()->{
-                    System.out.println("LOgin success message from invoke later");
-                    HomePage home=new HomePage(username, res.activeUsers, frame);
-                    JPanel homeview=home.getHomePage(username,res.activeUsers, in, out);
-                    frame.setMainFrame(homeview);//upon successful login, sets frame to show homepage
+                final LoginResponse finalRes = res;
+
+                SwingUtilities.invokeLater(() -> {
+                    System.out.println("Login success message from invoke later");
+                    HomePage home = new HomePage(username, finalRes.activeUsers, frame);
+                    JPanel homeview = home.getHomePage(username, finalRes.activeUsers, in, out);
+                    frame.setMainFrame(homeview);
                 });
             }
 
