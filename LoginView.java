@@ -47,7 +47,13 @@ public class LoginView{
             String json=gson.toJson(req);
             out.println(json);
            try{
-            String resp=in.readLine();
+            String resp;
+            synchronized (ResponseStore.lock) {
+                while (ResponseStore.responses.isEmpty()) {
+                    ResponseStore.lock.wait();
+                }
+                resp = ResponseStore.responses.poll();
+            }
             
             System.out.println("RAW response from backend:"+resp);
             LoginResponse res=gson.fromJson(resp,LoginResponse.class);

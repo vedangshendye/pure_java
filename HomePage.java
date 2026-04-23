@@ -48,7 +48,13 @@ public class HomePage {
             try{
                 String json=gson.toJson(req);
                 out.println(json);
-                String resp=in.readLine();
+                String resp;
+                synchronized (ResponseStore.lock) {
+                while (ResponseStore.responses.isEmpty()) {
+                    ResponseStore.lock.wait();
+                }
+                resp = ResponseStore.responses.poll();
+            }
                 Chatresp response=gson.fromJson(resp,Chatresp.class);
                 if(response.type.equals("chat_history")){
                     System.out.println("Success in retrieving chat");

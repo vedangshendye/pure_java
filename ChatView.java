@@ -33,7 +33,7 @@ class ChatView{
                 label.setText("You: "+messages[p].content);
             }
             else{
-                label.setText(""+messages[p].from+""+messages[p].content);
+                label.setText(""+messages[p].from+": "+messages[p].content);
             }
             messagearea.add(label);
         }
@@ -50,26 +50,46 @@ class ChatView{
             Gson gson=new Gson();
             String json=gson.toJson(msg);
             out.println(json);
-            new Thread(()->{
-                try{
-                    String res=in.readLine();
-                    ResMessage response=gson.fromJson(res, ResMessage.class);
-                    System.out.println("Response message type:"+response.type);
-                    System.out.println("Message received back: "+response.message.toString());
-                    SwingUtilities.invokeLater(()->{
-                        JLabel newmsg=new JLabel(""+user2+": "+response.message);
-                        JScrollBar vertical=scrollpane.getVerticalScrollBar();
-                        vertical.setValue(vertical.getMaximum());
-                        messagearea.add(newmsg);
-                        messagearea.revalidate();
-                        messagearea.repaint();
-                    });
+            new Thread(() -> {
+            try {
+                String res;
 
-                }catch(Exception ex){
-                    System.out.println(ex.toString());
+                while (true) {
+                    synchronized (ResponseStore.lock) {
+                        while (ResponseStore.responses.isEmpty()) {
+                            ResponseStore.lock.wait();
+                        }
+                        res = ResponseStore.responses.poll();
+                    }
+
+                    ResMessage temp = gson.fromJson(res, ResMessage.class);
+
+                    if (temp != null && "sent".equals(temp.type)) {
+
+                        final ResMessage finalResponse = temp;
+
+                        SwingUtilities.invokeLater(() -> {
+                            JLabel newmsg = new JLabel(user2+": " + finalResponse.message.content);
+                            messagearea.add(newmsg);
+                            messagearea.revalidate();
+
+                            JScrollBar vertical = scrollpane.getVerticalScrollBar();
+                            vertical.setValue(vertical.getMaximum());
+                        });
+
+                        break;
+                    }
                 }
 
-            }).start();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+        inp.setText("");
+        JLabel sentmsg=new JLabel("You: "+cont);
+        messagearea.add(sentmsg);
+        messagearea.revalidate();
+        
         });
         sending.add(inp);
         sending.add(sendbtn);

@@ -17,15 +17,30 @@ public class Main{
         System.out.println("Main working !");
         try{
             socket=new Socket("localhost",4000);
-            in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out=new PrintWriter(socket.getOutputStream(),true);
-            LoginView logscreen=new LoginView(in, out,frame);
-            JPanel panel=logscreen.getLoginView(in,out);
-            frame.setMainFrame(panel);//Main initially creates and sets the login screen
-            frame.setVisible(true);
+        in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out=new PrintWriter(socket.getOutputStream(),true);
+        new Thread(()->{
+            try{
+                String line;
+                while ((line = in.readLine()) != null) {
+                    System.out.println("GLOBAL RESPONSE: " + line);
 
-        }catch(Exception e){
-            System.out.println(e.toString());
+                    // Store latest response
+                    synchronized (ResponseStore.lock) {
+                        ResponseStore.responses.add(line);
+                        ResponseStore.lock.notifyAll();
+                    }
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }).start();
+        LoginView logscreen=new LoginView(in, out,frame);
+        JPanel panel=logscreen.getLoginView(in,out);
+        frame.setMainFrame(panel);//Main initially creates and sets the login screen
+        frame.setVisible(true);
+        } catch(Exception e){
+            e.printStackTrace();
         }
     }
 }
